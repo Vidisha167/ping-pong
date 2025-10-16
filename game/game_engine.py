@@ -30,7 +30,8 @@ class GameEngine:
 
     def update(self):
         self.ball.move()
-        self.ball.check_collision(self.player, self.ai)
+        # ✅ Pass paddles as a list to fix the TypeError
+        self.ball.check_collision([self.player, self.ai])
 
         if self.ball.x <= 0:
             self.ai_score += 1
