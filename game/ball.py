@@ -2,7 +2,7 @@ import pygame
 import random
 
 class Ball:
-    def __init__(self, x, y, width, height, screen_width, screen_height):
+    def __init__(self, x, y, width, height, screen_width, screen_height, paddle_sound):
         self.original_x = x
         self.original_y = y
         self.x = x
@@ -13,6 +13,7 @@ class Ball:
         self.screen_height = screen_height
         self.velocity_x = random.choice([-5, 5])
         self.velocity_y = random.choice([-3, 3])
+        self.paddle_sound = paddle_sound  # sound object passed from main.py
 
     def move(self):
         self.x += self.velocity_x
@@ -37,6 +38,9 @@ class Ball:
 
             if next_rect.colliderect(paddle_rect):
                 self.velocity_x *= -1  # Reverse X direction
+
+                # Play paddle hit sound
+                self.paddle_sound.play()
 
                 # Optional: tweak Y velocity depending on collision point
                 offset = (self.y + self.height / 2) - (paddle.y + paddle.height / 2)

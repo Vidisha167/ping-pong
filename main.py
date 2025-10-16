@@ -1,8 +1,10 @@
+import os
 import pygame
 from game.game_engine import GameEngine
 
-# Initialize pygame/Start application
+# Initialize pygame
 pygame.init()
+pygame.mixer.init()
 
 # Screen dimensions
 WIDTH, HEIGHT = 800, 600
@@ -17,10 +19,19 @@ BLACK = (0, 0, 0)
 clock = pygame.time.Clock()
 FPS = 60
 
-# Game loop
-engine = GameEngine(WIDTH, HEIGHT)
+# Load paddle hit sound (relative path)
+sound_path = os.path.join(os.path.dirname(__file__), "paddle_hit.wav")
+if os.path.exists(sound_path):
+    paddle_sound = pygame.mixer.Sound(sound_path)
+    paddle_sound.set_volume(0.5)
+else:
+    print("Warning: paddle_hit.wav not found. Sound will be disabled.")
+    paddle_sound = None
 
-# --- Functions ---
+# Create game engine
+engine = GameEngine(WIDTH, HEIGHT, paddle_sound)
+
+# --- Helper functions ---
 def show_game_over(winner):
     SCREEN.fill(BLACK)
     font = pygame.font.SysFont(None, 60)
@@ -46,8 +57,7 @@ def show_replay_options():
         SCREEN.blit(text, text_rect)
     pygame.display.flip()
 
-    waiting = True
-    while waiting:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -63,9 +73,9 @@ def show_replay_options():
                     pygame.quit()
                     exit()
 
-# --- Main Loop ---
+# --- Main loop ---
 def main():
-    TARGET_SCORE = show_replay_options()  # Ask for match length
+    TARGET_SCORE = show_replay_options()
     paused = False
 
     running = True
@@ -76,7 +86,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        # --- Pause toggle ---
+        # Pause toggle
         keys = pygame.key.get_pressed()
         if keys[pygame.K_p]:
             paused = not paused
@@ -89,7 +99,7 @@ def main():
 
         engine.render(SCREEN)
 
-        # --- Game Over Check ---
+        # Game Over Check
         if engine.player_score >= TARGET_SCORE:
             show_game_over("Player")
             TARGET_SCORE = show_replay_options()
@@ -99,11 +109,17 @@ def main():
             TARGET_SCORE = show_replay_options()
             engine.reset()
 
+        # Optional: show "PAUSED"
+        if paused:
+            font = pygame.font.SysFont(None, 60)
+            text = font.render("PAUSED", True, WHITE)
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            SCREEN.blit(text, text_rect)
+
         pygame.display.flip()
         clock.tick(FPS)
 
     pygame.quit()
 
-# --- Run ---
 if __name__ == "__main__":
     main()
